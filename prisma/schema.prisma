@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Appeal {
+  id        String        @id @default(uuid())
+  category  String
+  status    String        @default("OPEN")
+  message   String
+  children  AppealChild[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model AppealChild {
+  id        String @id @default(uuid())
+  appealId  String
+  childIin  String
+  childName String
+  appeal    Appeal @relation(fields: [appealId], references: [id])
+}
+
+model Enrollment {
+  id               String              @id @default(uuid())
+  athleteProfileId String
+  sportsCenterId   String
+  programId        String
+  status           String              @default("PENDING")
+  program          SportsCenterProgram @relation(fields: [programId], references: [id])
+  athleteProfile   AthleteProfile      @relation(fields: [athleteProfileId], references: [id])
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+}
+
+model SportsCenterProgram {
+  id             String       @id @default(uuid())
+  sportsCenterId String
+  sportType      String
+  capacity       Int
+  enrollments    Enrollment[]
+  sportsCenter   SportsCenter @relation(fields: [sportsCenterId], references: [id])
+}
+
+model AthleteProfile {
+  id          String       @id @default(uuid())
+  iin         String       @unique
+  enrollments Enrollment[]
+}
+
+model SportsCenter {
+  id       String                @id @default(uuid())
+  name     String
+  programs SportsCenterProgram[]
+}
